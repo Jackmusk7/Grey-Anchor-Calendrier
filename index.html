@@ -1080,18 +1080,117 @@ const CAT_COLORS = {
   Dev:          { bg: 'rgba(138,155,173,0.12)', color: '#8A9BAD' },
 };
 
-let tasks = JSON.parse(localStorage.getItem('ga_tasks') || '[]');
+const SUPABASE_URL = 'https://cjuwkpdywlmtkdcvprod.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNqdXdrcGR5d2xtdGtkY3Zwcm9kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzOTA5NjIsImV4cCI6MjA4OTk2Njk2Mn0.weClmETO4TRFqUNyKEM0tYmGdiK_LIl54RxcDNIDI2k';
+const TABLE = 'board_tasks';
+
+let tasks = [];
 let editingId = null;
 let assigneeFilter = 'all';
 let catFilter = 'all';
 let currentAssignee = 'B';
 
-function save() {
+function genId() {
+  return Date.now().toString(36) + Math.random().toString(36).substr(2);
+}
+
+async function dbFetch(method, body = null, id = null) {
+  const url = `${SUPABASE_URL}/rest/v1/${TABLE}${id ? `?id=eq.${id}` : ''}`;
+  const res = await fetch(method === 'GET' ? `${SUPABASE_URL}/rest/v1/${TABLE}?order=created_at.desc` : url, {
+    method,
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': method === 'POST' ? 'return=representation' : '',
+    },
+    body: body ? JSON.stringify(body) : null
+  });
+  if (method === 'GET') return res.json();
+  return res;
+}
+
+function toRow(t) {
+  return {
+    id: t.id, title: t.title, description: t.desc || '',
+    cat: t.cat, deadline: t.deadline || '', priority: t.priority,
+    status: t.status, assignee: t.assignee, created_at: t.createdAt || Date.now()
+  };
+}
+
+function fromRow(r) {
+  return {
+    id: r.id, title: r.title, desc: r.description || '',
+    cat: r.cat, deadline: r.deadline || '', priority: r.priority,
+    status: r.status, assignee: r.assignee, createdAt: r.created_at
+  };
+}
+
+async function loadTasks() {
+  try {
+    const rows = await dbFetch('GET');
+    tasks = rows.map(fromRow);
+  } catch(e) {
+    tasks = JSON.parse(localStorage.getItem('ga_tasks') || '[]');
+  }
+  render();
+  renderTimeline();
+}
+
+async function save() {
+  // fallback local
   localStorage.setItem('ga_tasks', JSON.stringify(tasks));
 }
 
-function genId() {
-  return Date.now().toString(36) + Math.random().toString(36).substr(2);
+async function saveTask() {
+  const title = document.getElementById('taskTitle').value.trim();
+  if (!title) { document.getElementById('taskTitle').focus(); return; }
+
+  const task = {
+    id: editingId || genId(),
+    title,
+    desc: document.getElementById('taskDesc').value.trim(),
+    cat: document.getElementById('taskCat').value,
+    deadline: document.getElementById('taskDeadline').value,
+    priority: document.getElementById('taskPriority').value,
+    status: document.getElementById('taskStatus').value,
+    assignee: currentAssignee,
+    createdAt: editingId ? (tasks.find(x => x.id === editingId)?.createdAt || Date.now()) : Date.now(),
+  };
+
+  if (editingId) {
+    await dbFetch('PATCH', toRow(task), task.id);
+    tasks = tasks.map(x => x.id === editingId ? task : x);
+    showToast('Tâche mise à jour ✓');
+  } else {
+    await dbFetch('POST', toRow(task));
+    tasks.unshift(task);
+    showToast('Tâche créée ✓');
+  }
+
+  save();
+  closeModal();
+  render();
+  renderTimeline();
+}
+
+async function deleteTask(id) {
+  await dbFetch('DELETE', null, id);
+  tasks = tasks.filter(x => x.id !== id);
+  save();
+  render();
+  renderTimeline();
+  showToast('Tâche supprimée');
+}
+
+async function moveTask(id, newStatus) {
+  await dbFetch('PATCH', { status: newStatus }, id);
+  tasks = tasks.map(x => x.id === id ? { ...x, status: newStatus } : x);
+  save();
+  render();
+  renderTimeline();
+  const col = COLS.find(c => c.id === newStatus);
+  showToast('Déplacé vers ' + col.label + ' ✓');
 }
 
 function deadlineStatus(dateStr) {
@@ -1169,51 +1268,6 @@ function closeModal() {
 
 function closeModalOutside(e) {
   if (e.target === document.getElementById('modalOverlay')) closeModal();
-}
-
-function saveTask() {
-  const title = document.getElementById('taskTitle').value.trim();
-  if (!title) { document.getElementById('taskTitle').focus(); return; }
-
-  const task = {
-    id: editingId || genId(),
-    title,
-    desc: document.getElementById('taskDesc').value.trim(),
-    cat: document.getElementById('taskCat').value,
-    deadline: document.getElementById('taskDeadline').value,
-    priority: document.getElementById('taskPriority').value,
-    status: document.getElementById('taskStatus').value,
-    assignee: currentAssignee,
-    createdAt: editingId ? (tasks.find(x => x.id === editingId)?.createdAt || Date.now()) : Date.now(),
-  };
-
-  if (editingId) {
-    tasks = tasks.map(x => x.id === editingId ? task : x);
-    showToast('Tâche mise à jour ✓');
-  } else {
-    tasks.unshift(task);
-    showToast('Tâche créée ✓');
-  }
-
-  save();
-  closeModal();
-  render();
-  renderTimeline();
-}
-
-function deleteTask(id) {
-  tasks = tasks.filter(x => x.id !== id);
-  save();
-  render();
-  showToast('Tâche supprimée');
-}
-
-function moveTask(id, newStatus) {
-  tasks = tasks.map(x => x.id === id ? { ...x, status: newStatus } : x);
-  save();
-  render();
-  const col = COLS.find(c => c.id === newStatus);
-  showToast('Déplacé vers ' + col.label + ' ✓');
 }
 
 function showToast(msg) {
@@ -1432,6 +1486,7 @@ function renderTimeline() {
 
 render();
 renderTimeline();
+loadTasks();
 setInterval(renderTimeline, 60000);
 </script>
 </body>
