@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GreyAnchor — Board</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0A0C0F;
+    --bg2: #111318;
+    --bg3: #161A20;
+    --bg4: #1C2028;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --teal: #1EC99B;
+    --teal-dim: rgba(30,201,155,0.12);
+    --blue: #4A8BAD;
+    --blue-dim: rgba(74,139,173,0.12);
+    --purple: #9B6BD4;
+    --purple-dim: rgba(155,107,212,0.12);
+    --amber: #D4A030;
+    --amber-dim: rgba(212,160,48,0.12);
+    --red: #E05050;
+    --red-dim: rgba(224,80,80,0.12);
+    --text: #E8E8E8;
+    --text2: #8A9BAD;
+    --text3: #3A4250;
+    --font: 'Syne', sans-serif;
+    --mono: 'DM Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* GRID BG */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* HEADER */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10,12,15,0.92);
+    backdrop-filter: blur(20px);
+    border-bottom: 0.5px solid var(--border);
+    padding: 0 32px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo svg { width: 28px; height: 36px; }
+
+  .logo-text {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--text);
+  }
+
+  .logo-text span {
+    color: var(--teal);
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    border: 1.5px solid transparent;
+  }
+  .avatar:hover { opacity: 0.8; }
+  .avatar.active { border-color: var(--teal); }
+  .avatar-r { background: var(--teal-dim); color: var(--teal); }
+  .avatar-g { background: var(--blue-dim); color: var(--blue); }
+  .avatar-all { background: var(--bg3); color: var(--text2); font-size: 10px; }
+
+  .add-btn {
+    display: flex; align-items: center; gap: 7px;
+    background: var(--teal);
+    color: #0A0C0F;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-family: var(--font);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.02em;
+  }
+  .add-btn:hover { background: #18b088; transform: translateY(-1px); }
+
+  /* STATS BAR */
+  .stats-bar {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    gap: 12px;
+    padding: 20px 32px 0;
+  }
+
+  .stat-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 12px;
+    color: var(--text2);
+    font-family: var(--mono);
+  }
+
+  .stat-chip .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+  }
+
+  .stat-chip strong {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  /* FILTERS */
+  .filters {
+    position: relative; z-index: 1;
+    display: flex;
+    gap: 8px;
+    padding: 16px 32px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .filter-label {
+    font-size: 11px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-right: 4px;
+    font-family: var(--mono);
+  }
+
+  .filter-btn {
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 0.5px solid var(--border);
+    background: transparent;
+    color: var(--text2);
+    font-family: var(--font);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .filter-btn:hover { border-color: var(--border2); color: var(--text); }
+  .filter-btn.active { background: var(--bg3); border-color: var(--border2); color: var(--text); }
+
+  /* BOARD */
+  .board {
+    position: relative; z-index: 1;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    padding: 0 32px 32px;
+  }
+
+  .column {
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 500px;
+  }
+
+  .col-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 18px;
+    border-bottom: 0.5px solid var(--border);
+  }
+
+  .col-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .col-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+  }
+
+  .col-count {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+    background: var(--bg3);
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+
+  .col-body {
+    flex: 1;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+  }
+
+  /* TASK CARD */
+  .task-card {
+    background: var(--bg3);
+    border: 0.5px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .task-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    border-radius: 10px 0 0 10px;
+  }
+
+  .task-card:hover {
+    border-color: var(--border2);
+    transform: translateY(-2px);
+    background: var(--bg4);
+  }
+
+  .task-card.done {
+    opacity: 0.45;
+  }
+
+  .task-card.done .task-title {
+    text-decoration: line-through;
+    color: var(--text3);
+  }
+
+  .task-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .task-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.4;
+    flex: 1;
+  }
+
+  .task-actions {
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    flex-shrink: 0;
+  }
+
+  .task-card:hover .task-actions { opacity: 1; }
+
+  .task-action-btn {
+    width: 22px; height: 22px;
+    border-radius: 5px;
+    border: none;
+    background: var(--bg4);
+    color: var(--text2);
+    font-size: 11px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .task-action-btn:hover { background: var(--border2); color: var(--text); }
+  .task-action-btn.del:hover { background: var(--red-dim); color: var(--red); }
+
+  .task-desc {
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.5;
+    margin-bottom: 10px;
+  }
+
+  .task-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .task-tag {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-family: var(--mono);
+    font-weight: 500;
+  }
+
+  .task-deadline {
+    font-size: 10px;
+    font-family: var(--mono);
+    padding: 2px 8px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .task-deadline.urgent { background: var(--red-dim); color: var(--red); }
+  .task-deadline.soon { background: var(--amber-dim); color: var(--amber); }
+  .task-deadline.ok { background: var(--teal-dim); color: var(--teal); }
+  .task-deadline.none { background: var(--bg4); color: var(--text3); }
+
+  .task-assignee {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px;
+    font-weight: 600;
+    margin-left: auto;
+  }
+
+  .task-progress {
+    margin-top: 10px;
+    height: 2px;
+    background: var(--bg4);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .task-progress-bar {
+    height: 100%;
+    border-radius: 2px;
+    background: var(--teal);
+    transition: width 0.3s;
+  }
+
+  /* EMPTY STATE */
+  .empty-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    color: var(--text3);
+    font-size: 12px;
+    text-align: center;
+    gap: 8px;
+    font-family: var(--mono);
+  }
+
+  .empty-icon {
+    font-size: 24px;
+    opacity: 0.3;
+  }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(10,12,15,0.85);
+    backdrop-filter: blur(8px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+
+  .modal-overlay.open {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .modal {
+    background: var(--bg2);
+    border: 0.5px solid var(--border2);
+    border-radius: 16px;
+    padding: 28px;
+    width: 520px;
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow-y: auto;
+    transform: translateY(20px);
+    transition: transform 0.2s;
+  }
+
+  .modal-overlay.open .modal {
+    transform: translateY(0);
+  }
+
+  .modal-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .modal-close {
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    border: 0.5px solid var(--border);
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .modal-close:hover { background: var(--bg3); color: var(--text); }
+
+  .form-group {
+    margin-bottom: 16px;
+  }
+
+  .form-label {
+    display: block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text3);
+    margin-bottom: 7px;
+    font-family: var(--mono);
+  }
+
+  .form-input, .form-textarea, .form-select {
+    width: 100%;
+    background: var(--bg3);
+    border: 0.5px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .form-input:focus, .form-textarea:focus, .form-select:focus {
+    border-color: var(--teal);
+  }
+
+  .form-textarea {
+    min-height: 80px;
+    resize: vertical;
+    line-height: 1.5;
+  }
+
+  .form-select option {
+    background: var(--bg3);
+    color: var(--text);
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .tag-picker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .tag-option {
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 0.5px solid var(--border);
+    background: transparent;
+    color: var(--text2);
+    font-family: var(--font);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .tag-option:hover { border-color: var(--border2); }
+  .tag-option.selected { color: var(--bg); font-weight: 600; }
+
+  .assignee-picker {
+    display: flex;
+    gap: 8px;
+  }
+
+  .assignee-option {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    border: 0.5px solid var(--border);
+    background: transparent;
+    color: var(--text2);
+    font-family: var(--font);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    font-weight: 500;
+  }
+  .assignee-option:hover { border-color: var(--border2); }
+  .assignee-option.selected-r { background: var(--teal-dim); border-color: var(--teal); color: var(--teal); }
+  .assignee-option.selected-g { background: var(--blue-dim); border-color: var(--blue); color: var(--blue); }
+  .assignee-option.selected-b { background: var(--purple-dim); border-color: var(--purple); color: var(--purple); }
+
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 24px;
+  }
+
+  .btn-primary {
+    flex: 1;
+    padding: 12px;
+    background: var(--teal);
+    color: #0A0C0F;
+    border: none;
+    border-radius: 8px;
+    font-family: var(--font);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.02em;
+  }
+  .btn-primary:hover { background: #18b088; }
+
+  .btn-secondary {
+    padding: 12px 20px;
+    background: var(--bg3);
+    color: var(--text2);
+    border: 0.5px solid var(--border);
+    border-radius: 8px;
+    font-family: var(--font);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-secondary:hover { color: var(--text); border-color: var(--border2); }
+
+  /* MOVE BUTTONS */
+  .move-btns {
+    display: flex;
+    gap: 4px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 0.5px solid var(--border);
+  }
+
+  .move-btn {
+    flex: 1;
+    padding: 5px 8px;
+    background: var(--bg4);
+    border: 0.5px solid var(--border);
+    border-radius: 6px;
+    color: var(--text2);
+    font-family: var(--mono);
+    font-size: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+  .move-btn:hover { color: var(--text); border-color: var(--border2); background: var(--bg3); }
+  .move-btn.active-col { background: var(--teal-dim); border-color: var(--teal); color: var(--teal); pointer-events: none; }
+
+  /* SEARCH */
+  .search-wrap {
+    position: relative;
+  }
+  .search-input {
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 12px 7px 32px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+    outline: none;
+    width: 200px;
+    transition: all 0.2s;
+  }
+  .search-input:focus { border-color: var(--teal); width: 240px; }
+  .search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text3);
+    font-size: 12px;
+    pointer-events: none;
+  }
+
+  /* SCROLLBAR */
+  .col-body::-webkit-scrollbar { width: 4px; }
+  .col-body::-webkit-scrollbar-track { background: transparent; }
+  .col-body::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 2px; }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--bg2);
+    border: 0.5px solid var(--teal);
+    border-radius: 10px;
+    padding: 12px 20px;
+    font-size: 13px;
+    color: var(--teal);
+    font-family: var(--mono);
+    z-index: 2000;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* TIMELINE */
+  .timeline-wrap {
+    position: relative; z-index: 1;
+    padding: 20px 32px 0;
+  }
+
+  .timeline-box {
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .timeline-box::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(30,201,155,0.04) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .timeline-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  .timeline-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .timeline-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text3);
+    font-family: var(--mono);
+  }
+
+  .timeline-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.02em;
+  }
+
+  .timeline-title span { color: var(--teal); }
+
+  .timeline-countdown {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .countdown-block {
+    text-align: center;
+    background: var(--bg3);
+    border: 0.5px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 12px;
+    min-width: 52px;
+  }
+
+  .countdown-num {
+    font-family: var(--mono);
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--teal);
+    line-height: 1;
+    display: block;
+  }
+
+  .countdown-lbl {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 3px;
+    display: block;
+  }
+
+  .countdown-sep {
+    font-size: 18px;
+    color: var(--text3);
+    font-family: var(--mono);
+    margin-bottom: 8px;
+  }
+
+  /* PROGRESS BAR */
+  .timeline-progress {
+    position: relative;
+    height: 6px;
+    background: var(--bg4);
+    border-radius: 6px;
+    overflow: visible;
+    margin-bottom: 12px;
+  }
+
+  .timeline-bar {
+    height: 100%;
+    border-radius: 6px;
+    background: linear-gradient(90deg, var(--teal), var(--blue));
+    position: relative;
+    transition: width 1s ease;
+  }
+
+  .timeline-bar::after {
+    content: '';
+    position: absolute;
+    right: -1px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--teal);
+    border: 2px solid var(--bg);
+    box-shadow: 0 0 8px rgba(30,201,155,0.5);
+  }
+
+  /* MILESTONES */
+  .timeline-milestones {
+    display: flex;
+    position: relative;
+    gap: 0;
+  }
+
+  .milestone {
+    flex: 1;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .milestone-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border2);
+    background: var(--bg4);
+    margin-bottom: 6px;
+    transition: all 0.3s;
+    position: relative;
+    z-index: 2;
+  }
+
+  .milestone.passed .milestone-dot {
+    background: var(--teal);
+    border-color: var(--teal);
+    box-shadow: 0 0 6px rgba(30,201,155,0.4);
+  }
+
+  .milestone.current .milestone-dot {
+    background: var(--amber);
+    border-color: var(--amber);
+    box-shadow: 0 0 8px rgba(212,160,48,0.5);
+    animation: pulse 1.5s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 6px rgba(212,160,48,0.4); }
+    50% { box-shadow: 0 0 14px rgba(212,160,48,0.8); }
+  }
+
+  .milestone-date {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-align: center;
+  }
+
+  .milestone.passed .milestone-date { color: var(--teal); }
+  .milestone.current .milestone-date { color: var(--amber); }
+
+  .milestone-name {
+    font-size: 10px;
+    color: var(--text3);
+    text-align: center;
+    margin-top: 2px;
+    line-height: 1.3;
+    max-width: 90px;
+  }
+
+  .milestone.passed .milestone-name { color: var(--text2); }
+  .milestone.current .milestone-name { color: var(--amber); font-weight: 600; }
+  .milestone.target .milestone-dot {
+    background: var(--bg4);
+    border-color: var(--teal);
+    border-style: dashed;
+  }
+  .milestone.target .milestone-date { color: var(--teal); }
+  .milestone.target .milestone-name { color: var(--teal); font-weight: 600; }
+
+  .pct-badge {
+    background: var(--teal-dim);
+    border: 0.5px solid rgba(30,201,155,0.3);
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--teal);
+    font-weight: 500;
+  }
+
+  @media (max-width: 1200px) {
+    .board { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 700px) {
+    .board { grid-template-columns: 1fr; padding: 0 16px 32px; }
+    header { padding: 0 16px; }
+    .stats-bar, .filters { padding-left: 16px; padding-right: 16px; }
+    .timeline-wrap { padding: 16px 16px 0; }
+    .timeline-countdown { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <svg viewBox="0 0 48 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="24" cy="10" r="8" stroke="#1EC99B" stroke-width="2.5"/>
+      <circle cx="24" cy="10" r="4" stroke="#4A8BAD" stroke-width="1.5"/>
+      <line x1="24" y1="18" x2="24" y2="44" stroke="#1EC99B" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="8" y1="26" x2="40" y2="26" stroke="#4A8BAD" stroke-width="2" stroke-linecap="round"/>
+      <path d="M24 44 C24 44 8 44 8 34" stroke="#1EC99B" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <path d="M24 44 C24 44 40 44 40 34" stroke="#1EC99B" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <line x1="2" y1="34" x2="14" y2="34" stroke="#4A8BAD" stroke-width="2" stroke-linecap="round"/>
+      <line x1="34" y1="34" x2="46" y2="34" stroke="#4A8BAD" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <span class="logo-text">Grey<span>Anchor</span> Board</span>
+  </div>
+  <div class="header-right">
+    <div class="search-wrap">
+      <span class="search-icon">⌕</span>
+      <input class="search-input" id="searchInput" placeholder="Rechercher..." oninput="render()">
+    </div>
+    <div style="display:flex;gap:6px;align-items:center;">
+      <div class="avatar avatar-all" id="filterAll" onclick="setFilter('all')" title="Tous">Tous</div>
+      <div class="avatar avatar-r" id="filterR" onclick="setFilter('R')" title="Rémi">R</div>
+      <div class="avatar avatar-g" id="filterG" onclick="setFilter('G')" title="Guillaume">G</div>
+    </div>
+    <button class="add-btn" onclick="openModal()">+ Nouvelle tâche</button>
+  </div>
+</header>
+
+<div class="timeline-wrap">
+  <div class="timeline-box">
+    <div class="timeline-top">
+      <div class="timeline-left">
+        <div>
+          <div class="timeline-label">Objectif principal</div>
+          <div class="timeline-title">Site opérationnel + <span>premiers robots live</span></div>
+        </div>
+        <div class="pct-badge" id="timelinePct">0%</div>
+      </div>
+      <div class="timeline-countdown" id="countdown"></div>
+    </div>
+    <div class="timeline-progress">
+      <div class="timeline-bar" id="timelineBar" style="width:0%"></div>
+    </div>
+    <div class="timeline-milestones" id="milestones"></div>
+  </div>
+</div>
+
+<div class="stats-bar" id="statsBar"></div>
+
+<div class="filters">
+  <span class="filter-label">Catégorie</span>
+  <button class="filter-btn active" onclick="setCatFilter('all', this)">Tout</button>
+  <button class="filter-btn" onclick="setCatFilter('Marketing', this)">Marketing</button>
+  <button class="filter-btn" onclick="setCatFilter('Site web', this)">Site web</button>
+  <button class="filter-btn" onclick="setCatFilter('Algorithmes', this)">Algorithmes</button>
+  <button class="filter-btn" onclick="setCatFilter('Contenu', this)">Contenu</button>
+  <button class="filter-btn" onclick="setCatFilter('Business', this)">Business</button>
+  <button class="filter-btn" onclick="setCatFilter('Dev', this)">Dev</button>
+</div>
+
+<div class="board" id="board"></div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <div class="modal-title">
+      <span id="modalTitleText">Nouvelle tâche</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Titre *</label>
+      <input class="form-input" id="taskTitle" placeholder="Ex: Créer les slides du rapport hebdo...">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Description</label>
+      <textarea class="form-textarea" id="taskDesc" placeholder="Détails, contexte, liens utiles..."></textarea>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Catégorie</label>
+        <select class="form-select" id="taskCat">
+          <option value="Marketing">Marketing</option>
+          <option value="Site web">Site web</option>
+          <option value="Algorithmes">Algorithmes</option>
+          <option value="Contenu">Contenu</option>
+          <option value="Business">Business</option>
+          <option value="Dev">Dev</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Deadline</label>
+        <input class="form-input" id="taskDeadline" type="date">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Priorité</label>
+        <select class="form-select" id="taskPriority">
+          <option value="normal">Normale</option>
+          <option value="high">Haute</option>
+          <option value="low">Basse</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Statut</label>
+        <select class="form-select" id="taskStatus">
+          <option value="todo">À faire</option>
+          <option value="inprogress">En cours</option>
+          <option value="review">En review</option>
+          <option value="done">Terminé</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Assigné à</label>
+      <div class="assignee-picker">
+        <button class="assignee-option" id="assignR" onclick="setAssignee('R')">Rémi</button>
+        <button class="assignee-option" id="assignG" onclick="setAssignee('G')">Guillaume</button>
+        <button class="assignee-option selected-b" id="assignB" onclick="setAssignee('B')">Les deux</button>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal()">Annuler</button>
+      <button class="btn-primary" onclick="saveTask()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const COLS = [
+  { id: 'todo',       label: 'À faire',    color: '#4A8BAD' },
+  { id: 'inprogress', label: 'En cours',   color: '#D4A030' },
+  { id: 'review',     label: 'En review',  color: '#9B6BD4' },
+  { id: 'done',       label: 'Terminé',    color: '#1EC99B' },
+];
+
+const CAT_COLORS = {
+  Marketing:    { bg: 'rgba(30,201,155,0.12)',  color: '#1EC99B' },
+  'Site web':   { bg: 'rgba(74,139,173,0.12)',  color: '#4A8BAD' },
+  Algorithmes:  { bg: 'rgba(155,107,212,0.12)', color: '#9B6BD4' },
+  Contenu:      { bg: 'rgba(224,80,80,0.12)',   color: '#E05050' },
+  Business:     { bg: 'rgba(212,160,48,0.12)',  color: '#D4A030' },
+  Dev:          { bg: 'rgba(138,155,173,0.12)', color: '#8A9BAD' },
+};
+
+let tasks = JSON.parse(localStorage.getItem('ga_tasks') || '[]');
+let editingId = null;
+let assigneeFilter = 'all';
+let catFilter = 'all';
+let currentAssignee = 'B';
+
+function save() {
+  localStorage.setItem('ga_tasks', JSON.stringify(tasks));
+}
+
+function genId() {
+  return Date.now().toString(36) + Math.random().toString(36).substr(2);
+}
+
+function deadlineStatus(dateStr) {
+  if (!dateStr) return 'none';
+  const d = new Date(dateStr);
+  const now = new Date();
+  const diff = (d - now) / (1000 * 60 * 60 * 24);
+  if (diff < 0) return 'urgent';
+  if (diff <= 3) return 'urgent';
+  if (diff <= 7) return 'soon';
+  return 'ok';
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+}
+
+function setFilter(f) {
+  assigneeFilter = f;
+  document.querySelectorAll('.avatar').forEach(a => a.classList.remove('active'));
+  document.getElementById('filter' + (f === 'all' ? 'All' : f)).classList.add('active');
+  render();
+}
+
+function setCatFilter(cat, btn) {
+  catFilter = cat;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function setAssignee(a) {
+  currentAssignee = a;
+  document.querySelectorAll('.assignee-option').forEach(b => {
+    b.className = 'assignee-option';
+  });
+  const map = { R: 'selected-r', G: 'selected-g', B: 'selected-b' };
+  document.getElementById('assign' + a).className = 'assignee-option ' + map[a];
+}
+
+function openModal(id = null) {
+  editingId = id;
+  const modal = document.getElementById('modalOverlay');
+  document.getElementById('modalTitleText').textContent = id ? 'Modifier la tâche' : 'Nouvelle tâche';
+
+  if (id) {
+    const t = tasks.find(x => x.id === id);
+    document.getElementById('taskTitle').value = t.title;
+    document.getElementById('taskDesc').value = t.desc || '';
+    document.getElementById('taskCat').value = t.cat || 'Marketing';
+    document.getElementById('taskDeadline').value = t.deadline || '';
+    document.getElementById('taskPriority').value = t.priority || 'normal';
+    document.getElementById('taskStatus').value = t.status;
+    setAssignee(t.assignee || 'B');
+  } else {
+    document.getElementById('taskTitle').value = '';
+    document.getElementById('taskDesc').value = '';
+    document.getElementById('taskCat').value = 'Marketing';
+    document.getElementById('taskDeadline').value = '';
+    document.getElementById('taskPriority').value = 'normal';
+    document.getElementById('taskStatus').value = 'todo';
+    setAssignee('B');
+  }
+
+  modal.classList.add('open');
+  setTimeout(() => document.getElementById('taskTitle').focus(), 100);
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  editingId = null;
+}
+
+function closeModalOutside(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+}
+
+function saveTask() {
+  const title = document.getElementById('taskTitle').value.trim();
+  if (!title) { document.getElementById('taskTitle').focus(); return; }
+
+  const task = {
+    id: editingId || genId(),
+    title,
+    desc: document.getElementById('taskDesc').value.trim(),
+    cat: document.getElementById('taskCat').value,
+    deadline: document.getElementById('taskDeadline').value,
+    priority: document.getElementById('taskPriority').value,
+    status: document.getElementById('taskStatus').value,
+    assignee: currentAssignee,
+    createdAt: editingId ? (tasks.find(x => x.id === editingId)?.createdAt || Date.now()) : Date.now(),
+  };
+
+  if (editingId) {
+    tasks = tasks.map(x => x.id === editingId ? task : x);
+    showToast('Tâche mise à jour ✓');
+  } else {
+    tasks.unshift(task);
+    showToast('Tâche créée ✓');
+  }
+
+  save();
+  closeModal();
+  render();
+}
+
+function deleteTask(id) {
+  tasks = tasks.filter(x => x.id !== id);
+  save();
+  render();
+  showToast('Tâche supprimée');
+}
+
+function moveTask(id, newStatus) {
+  tasks = tasks.map(x => x.id === id ? { ...x, status: newStatus } : x);
+  save();
+  render();
+  const col = COLS.find(c => c.id === newStatus);
+  showToast('Déplacé vers ' + col.label + ' ✓');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function getFilteredTasks() {
+  const search = document.getElementById('searchInput')?.value?.toLowerCase() || '';
+  return tasks.filter(t => {
+    if (assigneeFilter !== 'all' && t.assignee !== assigneeFilter && !(assigneeFilter !== 'all' && t.assignee === 'B')) return false;
+    if (catFilter !== 'all' && t.cat !== catFilter) return false;
+    if (search && !t.title.toLowerCase().includes(search) && !(t.desc || '').toLowerCase().includes(search)) return false;
+    return true;
+  });
+}
+
+function renderStats() {
+  const all = tasks;
+  const done = all.filter(t => t.status === 'done').length;
+  const inprog = all.filter(t => t.status === 'inprogress').length;
+  const urgent = all.filter(t => deadlineStatus(t.deadline) === 'urgent' && t.status !== 'done').length;
+  const pct = all.length ? Math.round(done / all.length * 100) : 0;
+
+  document.getElementById('statsBar').innerHTML = `
+    <div class="stat-chip"><div class="dot" style="background:#4A8BAD"></div><strong>${all.length}</strong> tâches total</div>
+    <div class="stat-chip"><div class="dot" style="background:#D4A030"></div><strong>${inprog}</strong> en cours</div>
+    <div class="stat-chip"><div class="dot" style="background:#1EC99B"></div><strong>${done}</strong> terminées</div>
+    <div class="stat-chip"><div class="dot" style="background:#E05050"></div><strong>${urgent}</strong> urgentes</div>
+    <div class="stat-chip"><div class="dot" style="background:#1EC99B"></div><strong>${pct}%</strong> complété</div>
+  `;
+}
+
+function render() {
+  renderStats();
+  const filtered = getFilteredTasks();
+  const board = document.getElementById('board');
+  board.innerHTML = '';
+
+  COLS.forEach(col => {
+    const colTasks = filtered.filter(t => t.status === col.id);
+    const allColTasks = tasks.filter(t => t.status === col.id);
+
+    const colEl = document.createElement('div');
+    colEl.className = 'column';
+
+    colEl.innerHTML = `
+      <div class="col-header">
+        <div class="col-title">
+          <div class="col-dot" style="background:${col.color}"></div>
+          ${col.label}
+        </div>
+        <div class="col-count">${allColTasks.length}</div>
+      </div>
+      <div class="col-body" id="col-${col.id}"></div>
+    `;
+
+    board.appendChild(colEl);
+
+    const body = colEl.querySelector('.col-body');
+
+    if (colTasks.length === 0) {
+      body.innerHTML = `<div class="empty-col"><div class="empty-icon">⬡</div>Aucune tâche</div>`;
+    } else {
+      colTasks.forEach(task => {
+        const ds = deadlineStatus(task.deadline);
+        const cat = CAT_COLORS[task.cat] || CAT_COLORS.Marketing;
+        const assigneeLabel = task.assignee === 'R' ? 'R' : task.assignee === 'G' ? 'G' : 'R+G';
+        const assigneeColor = task.assignee === 'R' ? 'var(--teal)' : task.assignee === 'G' ? 'var(--blue)' : 'var(--purple)';
+        const assigneeBg = task.assignee === 'R' ? 'var(--teal-dim)' : task.assignee === 'G' ? 'var(--blue-dim)' : 'var(--purple-dim)';
+        const priorityDot = task.priority === 'high' ? '#E05050' : task.priority === 'low' ? '#3A4250' : 'transparent';
+
+        const moveBtns = COLS.map(c => `
+          <button class="move-btn ${c.id === col.id ? 'active-col' : ''}" onclick="event.stopPropagation();moveTask('${task.id}','${c.id}')">
+            ${c.label}
+          </button>
+        `).join('');
+
+        const card = document.createElement('div');
+        card.className = `task-card${task.status === 'done' ? ' done' : ''}`;
+        card.style.cssText = `--card-color: ${col.color}`;
+        card.querySelector = card.querySelector || (() => null);
+
+        card.innerHTML = `
+          <div class="task-card" style="background:var(--bg3);border:1.5px solid ${cat.color};border-radius:10px;padding:14px 16px;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden;box-shadow:0 0 10px ${cat.color}18;" onclick="openModal('${task.id}')">
+            <div style="position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:10px 0 0 10px;background:${cat.color}"></div>
+            ${task.priority === 'high' ? `<div style="position:absolute;top:10px;right:10px;width:6px;height:6px;border-radius:50%;background:var(--red)"></div>` : ''}
+            <div class="task-top">
+              <div class="task-title" style="${task.status === 'done' ? 'text-decoration:line-through;color:var(--text3)' : ''}">${task.title}</div>
+              <div class="task-actions">
+                <button class="task-action-btn" onclick="event.stopPropagation();openModal('${task.id}')" title="Modifier">✎</button>
+                <button class="task-action-btn del" onclick="event.stopPropagation();deleteTask('${task.id}')" title="Supprimer">✕</button>
+              </div>
+            </div>
+            ${task.desc ? `<div class="task-desc">${task.desc.substring(0, 80)}${task.desc.length > 80 ? '...' : ''}</div>` : ''}
+            <div class="task-meta">
+              <span class="task-tag" style="background:${cat.bg};color:${cat.color}">${task.cat}</span>
+              ${task.deadline ? `<span class="task-deadline ${ds}">⏱ ${formatDate(task.deadline)}</span>` : ''}
+              <div class="task-assignee" style="background:${assigneeBg};color:${assigneeColor};width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;margin-left:auto">${assigneeLabel}</div>
+            </div>
+            <div class="move-btns">${moveBtns}</div>
+          </div>
+        `;
+
+        body.innerHTML += card.innerHTML;
+      });
+    }
+  });
+}
+
+// Keyboard shortcut
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+  if (e.key === 'n' && !document.getElementById('modalOverlay').classList.contains('open') && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+    openModal();
+  }
+});
+
+// Init with sample tasks if empty
+if (tasks.length === 0) {
+  tasks = [
+    { id: genId(), title: 'Finaliser le site public GreyAnchor', desc: 'Hero, section algos en 3 colonnes, grille de fond sur tout le site', cat: 'Site web', deadline: new Date(Date.now() + 3*86400000).toISOString().split('T')[0], priority: 'high', status: 'inprogress', assignee: 'G', createdAt: Date.now() },
+    { id: genId(), title: 'Créer les 6 slides carousel éducatif', desc: 'Comment un algo prend une décision — format 1080x1080 + 1080x1920', cat: 'Contenu', deadline: new Date(Date.now() + 5*86400000).toISOString().split('T')[0], priority: 'high', status: 'inprogress', assignee: 'R', createdAt: Date.now() },
+    { id: genId(), title: 'Envoyer les stats hebdo à Claude', desc: 'Performances des 4 algos pour génération du rapport automatique', cat: 'Marketing', deadline: new Date(Date.now() + 1*86400000).toISOString().split('T')[0], priority: 'high', status: 'todo', assignee: 'R', createdAt: Date.now() },
+    { id: genId(), title: 'Mettre en place la protection .ex5', desc: 'Validation serveur à chaque démarrage MT5 via endpoint Supabase', cat: 'Algorithmes', deadline: new Date(Date.now() + 10*86400000).toISOString().split('T')[0], priority: 'normal', status: 'todo', assignee: 'G', createdAt: Date.now() },
+    { id: genId(), title: 'Ouvrir comptes Instagram + TikTok + X', desc: 'Créer les profils avec le bon branding GreyAnchor', cat: 'Marketing', deadline: new Date(Date.now() + 7*86400000).toISOString().split('T')[0], priority: 'normal', status: 'todo', assignee: 'B', createdAt: Date.now() },
+    { id: genId(), title: 'Planning contenu 3 mois validé', desc: 'Piliers PREUVE / SÉLECTION / OPINION / ANATOMIE — doc PDF finalisé', cat: 'Contenu', deadline: '', priority: 'low', status: 'done', assignee: 'B', createdAt: Date.now() },
+    { id: genId(), title: 'Stratégie business & chiffrage marché', desc: 'ARR, MRR, scénarios pessimiste/réaliste/optimiste — France + International', cat: 'Business', deadline: '', priority: 'low', status: 'done', assignee: 'B', createdAt: Date.now() },
+    { id: genId(), title: 'Valider grille tarifaire', desc: '89€ / 149€ / 229€ / 299€ — abonnements mensuels', cat: 'Business', deadline: '', priority: 'normal', status: 'done', assignee: 'B', createdAt: Date.now() },
+  ];
+  save();
+}
+
+// ── TIMELINE ──
+const MILESTONES = [
+  { date: '2025-03-24', name: 'Kick-off', label: 'Mar 25' },
+  { date: '2025-05-01', name: 'Site beta\nen ligne', label: 'Mai 25' },
+  { date: '2025-06-15', name: 'Premiers\nclients test', label: 'Juin 25' },
+  { date: '2025-07-15', name: 'Contenu\nréseaux lancé', label: 'Juil 25' },
+  { date: '2025-09-01', name: '🚀 GO LIVE\nrobots + site', label: 'Sep 25' },
+];
+
+const DEADLINE = new Date('2025-09-01');
+const START = new Date('2025-03-24');
+
+function renderTimeline() {
+  const now = new Date();
+  const total = DEADLINE - START;
+  const elapsed = Math.min(Math.max(now - START, 0), total);
+  const pct = Math.round((elapsed / total) * 100);
+
+  document.getElementById('timelineBar').style.width = pct + '%';
+  document.getElementById('timelinePct').textContent = pct + '%';
+
+  const diff = DEADLINE - now;
+  const days = Math.max(0, Math.floor(diff / 86400000));
+  const months = Math.floor(days / 30);
+  const remDays = days % 30;
+  document.getElementById('countdown').innerHTML = `
+    <div class="countdown-block"><span class="countdown-num">${months}</span><span class="countdown-lbl">mois</span></div>
+    <div class="countdown-sep">:</div>
+    <div class="countdown-block"><span class="countdown-num">${remDays}</span><span class="countdown-lbl">jours</span></div>
+  `;
+
+  const ms = document.getElementById('milestones');
+  ms.innerHTML = MILESTONES.map(m => {
+    const mDate = new Date(m.date);
+    let cls = 'milestone';
+    if (mDate < now) cls += ' passed';
+    else if (m.date === '2025-09-01') cls += ' target';
+    else {
+      const upcoming = MILESTONES.filter(x => new Date(x.date) >= now);
+      if (upcoming.length && upcoming[0].date === m.date) cls += ' current';
+    }
+    return `
+      <div class="${cls}">
+        <div class="milestone-dot"></div>
+        <div class="milestone-date">${m.label}</div>
+        <div class="milestone-name">${m.name}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+render();
+renderTimeline();
+setInterval(renderTimeline, 60000);
+</script>
+</body>
+</html>
